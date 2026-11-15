@@ -2,6 +2,7 @@
 # Must account for VLM's encoder patch size 
  
 import numpy as np
+import math
 
 # Main Function: Random Dot Stereogram Pair Generator (not fully functional)
 def make_rds(height = 448, width = 448, sq_size = 224, dot_size = 4, density = 0.5, disparity = 0, seed = None):
@@ -101,10 +102,28 @@ def _eye_positions(rng, bg_dots, sq_dots, shift, top, left, sq_size, dot_size, d
     covered = _in_region(bg_dots, dot_size, top, left + shift, sq_size, sq_size)
     bg_visible = bg_dots[~covered] 
 
-    # 3. (Later: refill the strip the square shifted away from.)
+    # 3. Refill the strip the square shifted away from.
+    refill = np.empty((0,2), dtype=int) # no strip at 0 disparity
+    if shift != 0: 
+        width = abs(shift)
+        lam = -np.log(1-density) / dot_size**2 
+        dot_cnt = round(lam * sq_size * abs(shift)) # dot count
+        if shift > 0:
+            c0 = left # square moved right, empty strip on its left
+        else:
+            c0 = left + sq_size + shift # square moved left, empty strip on its right
+
+    # Place refill by dot CENTER: center = corner + h, so a center in [a, b)
+    # needs a corner in [a - h, b - h). ceil() rounds to the integers in that
+    # range (matters only for odd dot_size, where h is a half-integer).
+   
+    h = dot_size/2 # half-dot offset
+    str_rows = rng.integers(math.ceil(top - h), math.ceil(top + sq_size - h), size=(dot_cnt)) # rows
+    str_cols = rng.integers(math.ceil(c0 - h), math.ceil(c0 + width - h), size=(dot_cnt)) # columns
+    refill = np.stack((str_rows, str_cols), axis = 1)
 
     # 4. This eye's full set of dots. 
-    return np.vstack([bg_visible, sq_shifted])
+    return np.vstack([bg_visible, sq_shifted, refill])
 
 # Non-vectorized Dot Stamper (Not used by make_rds()--For testing purposes only) 
 def _stamp_loop(positions, dot_size, shape):

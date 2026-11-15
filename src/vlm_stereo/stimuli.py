@@ -54,10 +54,17 @@ def make_rds(height = 448, width = 448, sq_size = 224, dot_size = 4, density = 0
     in_sq = _in_region(positions, dot_size, top, left, sq_size, sq_size)
     sq_dots = positions[in_sq]
     bg_dots = positions[~in_sq]
-    img = _stamp_vectorized(positions, dot_size, shape)
+
+    shift_L = disparity // 2
+    shift_R = -disparity // 2
+    posL = _eye_positions(rng, bg_dots, sq_dots, shift_L, top, left, sq_size, dot_size, density) 
+    posR = _eye_positions(rng, bg_dots, sq_dots, shift_R, top, left, sq_size, dot_size, density) 
+
+    imgL = _stamp_vectorized(posL, dot_size, shape)
+    imgR = _stamp_vectorized(posR, dot_size, shape)
 
    
-    return img
+    return imgL, imgR
 
 # Helper Function: Check that inputs are integers 
 def _require_int(name, value):
@@ -76,14 +83,28 @@ def _random_positions(rng, shape, density, dot_size):
 
     return np.stack((rows, cols), axis=1)
 
-# Helper Function:
- # Edge coordinates: pixel i occupies the interval [i, i + 1); a dot starting at corner r spans [r, r + dot_size).
+# Helper Function: Define what dots occur within the square
+# Edge coordinates: pixel i occupies the interval [i, i + 1); a dot starting at corner r spans [r, r + dot_size).
 def _in_region(positions, dot_size, top, left, region_h, region_w):
     centers = positions + dot_size / 2
    
     return ((centers[:,0] >= top) & (centers[:,0] < top + region_h) & 
             (centers[:,1] >= left) & (centers[:,1] < left + region_w))
     
+# Helper Function: Shift, Occlude, Drop, & Refill 
+def _eye_positions(rng, bg_dots, sq_dots, shift, top, left, sq_size, dot_size, density):
+    """Dot positions for one eye: background minus the occluded part, plus the square shifted by 'shift' columns (refill added later)."""
+    # 1. Move sq_dots horizontally by shift
+    sq_shifted = sq_dots + np.array([0, shift])
+
+    # 2. Find bg_dots now covered by the moved square and drop them. 
+    covered = _in_region(bg_dots, dot_size, top, left + shift, sq_size, sq_size)
+    bg_visible = bg_dots[~covered] 
+
+    # 3. (Later: refill the strip the square shifted away from.)
+
+    # 4. This eye's full set of dots. 
+    return np.vstack([bg_visible, sq_shifted])
 
 # Non-vectorized Dot Stamper (Not used by make_rds()--For testing purposes only) 
 def _stamp_loop(positions, dot_size, shape):

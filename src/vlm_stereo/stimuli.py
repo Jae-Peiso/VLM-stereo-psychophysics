@@ -113,14 +113,14 @@ def _eye_positions(rng, bg_dots, sq_dots, shift, top, left, sq_size, dot_size, d
         else:
             c0 = left + sq_size + shift # square moved left, empty strip on its right
 
-    # Place refill by dot CENTER: center = corner + h, so a center in [a, b)
-    # needs a corner in [a - h, b - h). ceil() rounds to the integers in that
-    # range (matters only for odd dot_size, where h is a half-integer).
+        # Place refill by dot CENTER: center = corner + h, so a center in [a, b)
+        # needs a corner in [a - h, b - h). ceil() rounds to the integers in that
+        # range (matters only for odd dot_size, where h is a half-integer).
    
-    h = dot_size/2 # half-dot offset
-    str_rows = rng.integers(math.ceil(top - h), math.ceil(top + sq_size - h), size=(dot_cnt)) # rows
-    str_cols = rng.integers(math.ceil(c0 - h), math.ceil(c0 + width - h), size=(dot_cnt)) # columns
-    refill = np.stack((str_rows, str_cols), axis = 1)
+        h = dot_size/2 # half-dot offset
+        str_rows = rng.integers(math.ceil(top - h), math.ceil(top + sq_size - h), size=dot_cnt) # rows
+        str_cols = rng.integers(math.ceil(c0 - h), math.ceil(c0 + width - h), size=dot_cnt) # columns
+        refill = np.stack((str_rows, str_cols), axis = 1)
 
     # 4. This eye's full set of dots. 
     return np.vstack([bg_visible, sq_shifted, refill])

@@ -13,9 +13,9 @@ In progress (November 2026).
 | Random-dot stereogram generator (`src/vlm_stereo/stimuli.py`) | Done, validated numerically |
 | Design decisions log ([DECISIONS.md](DECISIONS.md)) | Ongoing |
 | Local inference with Qwen2.5-VL-3B-Instruct (4-bit, MLX) | Running |
-| pytest tests for the generator | Next |
-| Backend with log-probability scoring, trial generator, SQLite results | Planned |
-| Pilot, psychometric fits, signal detection analysis, figures | Planned |
+| pytest tests for the generator | Done |
+| Backend with log-probability scoring, trial generator, SQLite results | Partially complete |
+| Pilot, psychometric fits, signal detection analysis, figures | Next |
 
 ## Design summary
 

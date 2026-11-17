@@ -74,6 +74,8 @@ Date: 2026-11-11
 Decision: The cache key hashes model, prompt, generation settings, image bytes, image order, and preprocessing settings.
 Why: A key without the image would give every seed at the same disparity one cached answer, silently faking a perfectly consistent model.
 In plain words: Each stimulus gets its own cache entry, so caching can't fake a result.
+Date: 2026-11-16
+Observation: The first couple of runs of probe_logprobs.py with slightly different prompt (missing spaces etc.) but the same seed produced different log-probabilities. **This means that the prompt's wording itself is an experimental condition.** 
 
 ## D012: Seeds
 Date: 2026-11-11
@@ -124,6 +126,9 @@ Decision: make_rds rejects only invalid inputs (non-integers, density outside (0
 Why: Hard-coding scientific ranges into the generator would block legitimate future experiments.
 In plain words: The generator rejects what's broken; the config decides what's worth testing.
 
+## D020: Score answers as words, summing over varied presentations 
+Date: 2026-11-16
+Decision: Will score answers as words, summing over same words with different capitalizations and spaces, using multi-token words computed exactly. Record the probability mass over each answer (i.e., "front" and "behind"). Synonyms (e.g., 'in front', 'back', 'rear') only carry about 3% of the probability and so I'm choosing not to count them, since chasing all the possible phrasings would mean more forward passes and for very little return. Answer probability mass is logged per trial to monitor this.  
 ---
 
 ## Open questions
